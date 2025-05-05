@@ -90,6 +90,55 @@
             color: #1f2937;
             font-family: 'Fira Code', 'Consolas', monospace;
         }
+        /* Enhanced section highlighting */
+        .section-highlight {
+            position: relative;
+        }
+        
+        .section-highlight::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #3b82f6;
+            border-radius: 2px;
+            transform: scaleY(0);
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .section-highlight.active::before {
+            transform: scaleY(1);
+        }
+
+        /* Centered search */
+        .search-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .search-input {
+            width: 100%;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .search-input:focus {
+            background: white;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 5rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -103,24 +152,28 @@
                             <h1 class="text-xl font-bold text-gray-800">Laravel QueryLayer</h1>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <!-- Search Bar -->
-                        <div class="relative">
+                    <div class="flex items-center">
+                        <!-- Centered Search Bar -->
+                        <div class="search-container">
                             <input 
                                 type="text" 
                                 v-model="searchQuery" 
                                 @input="performSearch"
                                 placeholder="Search documentation..." 
-                                class="w-64 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                class="search-input px-4 py-2 rounded-lg"
                             >
-                            <div v-if="searchResults.length > 0" class="absolute top-full left-0 w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto">
-                                <div v-for="result in searchResults" :key="result.id" class="p-3 hover:bg-gray-50 cursor-pointer" @click="scrollToSection(result.id)">
+                            <div v-if="searchResults.length > 0" 
+                                 class="absolute top-full left-0 w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50">
+                                <div v-for="result in searchResults" 
+                                     :key="result.id" 
+                                     class="p-3 hover:bg-gray-50 cursor-pointer search-result" 
+                                     @click="scrollToSection(result.id)">
                                     <div class="font-medium text-gray-900" v-html="result.title"></div>
                                     <div class="text-sm text-gray-600" v-html="result.excerpt"></div>
                                 </div>
                             </div>
                         </div>
-                        <a href="https://github.com/nejcc/laravel-querylayer" class="text-gray-600 hover:text-gray-900">
+                        <a href="https://github.com/nejcc/laravel-querylayer" class="text-gray-600 hover:text-gray-900 ml-4">
                             <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                             </svg>
@@ -151,7 +204,7 @@
 
                 <!-- Content -->
                 <div class="flex-1 content">
-                    <section id="introduction" class="mb-12">
+                    <section id="introduction" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'introduction' }">
                         <h2 class="text-3xl font-bold mb-4">Introduction</h2>
                         <p class="text-gray-700 mb-4">
                             Laravel QueryLayer is a powerful and flexible repository pattern implementation for Laravel applications. 
@@ -182,7 +235,7 @@
                         </div>
                     </section>
 
-                    <section id="installation" class="mb-12">
+                    <section id="installation" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'installation' }">
                         <h2 class="text-3xl font-bold mb-4">Installation</h2>
                         <p class="text-gray-700 mb-4">
                             You can install the package via composer:
@@ -193,7 +246,7 @@
                         </p>
                     </section>
 
-                    <section id="model-interface" class="mb-12">
+                    <section id="model-interface" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'model-interface' }">
                         <h2 class="text-3xl font-bold mb-4">Model Interface</h2>
                         <p class="text-gray-700 mb-4">
                             You can use repository functionality directly on your models by implementing the 
@@ -246,7 +299,7 @@ $query = User::getQuery();
 $repository = User::getRepository();</code></pre>
                     </section>
 
-                    <section id="repository-pattern" class="mb-12">
+                    <section id="repository-pattern" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'repository-pattern' }">
                         <h2 class="text-3xl font-bold mb-4">Repository Pattern</h2>
                         <p class="text-gray-700 mb-4">
                             For more complex scenarios, you can extend the <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">BaseRepository</code>:
@@ -275,7 +328,7 @@ class UserRepository extends BaseRepository
 }</code></pre>
                     </section>
 
-                    <section id="advanced-features" class="mb-12">
+                    <section id="advanced-features" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'advanced-features' }">
                         <h2 class="text-3xl font-bold mb-4">Advanced Features</h2>
                         
                         <h3 class="text-2xl font-bold mt-8 mb-4">Method Chaining</h3>
@@ -391,6 +444,7 @@ $activeUsersByRole = $userRepository->db()
                         element.scrollIntoView({ behavior: 'smooth' })
                         activeSection.value = sectionId
                         searchResults.value = []
+                        history.replaceState(null, null, `#${sectionId}`)
                     }
                 }
 
@@ -398,19 +452,27 @@ $activeUsersByRole = $userRepository->db()
                     activeSection.value = sectionId
                 }
 
-                // Intersection Observer for active section tracking
+                // Enhanced section tracking
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
-                            activeSection.value = entry.target.id
+                            const sectionId = entry.target.id
+                            activeSection.value = sectionId
+                            history.replaceState(null, null, `#${sectionId}`)
                         }
                     })
-                }, { threshold: 0.5 })
+                }, { 
+                    threshold: 0.2,
+                    rootMargin: '-100px 0px -50% 0px'
+                })
 
                 // Observe all sections
-                sections.forEach(section => {
-                    const element = document.getElementById(section.id)
-                    if (element) observer.observe(element)
+                onMounted(() => {
+                    sections.forEach(section => {
+                        const element = document.getElementById(section.id)
+                        if (element) observer.observe(element)
+                    })
+                    addCopyButtons()
                 })
 
                 // Add copy button functionality
@@ -429,11 +491,6 @@ $activeUsersByRole = $userRepository->db()
                         block.parentElement.appendChild(button)
                     })
                 }
-
-                // Call after Vue mounts
-                onMounted(() => {
-                    addCopyButtons()
-                })
 
                 return {
                     searchQuery,
