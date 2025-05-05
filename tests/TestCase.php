@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Nejcc\LaravelQuerylayer\LaravelQuerylayerServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
-final class TestCase extends Orchestra
+abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
 

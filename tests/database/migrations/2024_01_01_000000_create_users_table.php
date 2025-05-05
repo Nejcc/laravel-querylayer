@@ -17,6 +17,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->string('role')->default('user');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
