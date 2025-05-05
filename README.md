@@ -4,19 +4,19 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/nejcc/laravel-querylayer.svg?style=flat-square)](https://packagist.org/packages/nejcc/laravel-querylayer)
 [![GitHub Actions](https://github.com/nejcc/laravel-querylayer/actions/workflows/main.yml/badge.svg)](https://github.com/nejcc/laravel-querylayer/actions)
 [![License](https://img.shields.io/packagist/l/nejcc/laravel-querylayer.svg?style=flat-square)](LICENSE.md)
-[![StyleCI](https://github.styleci.io/repos/your-repo-id/shield)](https://github.styleci.io/repos/your-repo-id)
 
-A powerful and flexible repository pattern implementation for Laravel applications. This package provides a clean and maintainable way to handle database operations in your Laravel projects.
+A powerful and flexible repository pattern implementation for Laravel applications. This package provides a clean and maintainable way to handle database operations in your Laravel projects, with built-in singleton pattern support for efficient repository management.
 
 ## Features
 
 - 🚀 Quick repository creation for any Eloquent model
 - 🔄 Full CRUD operations out of the box
-- 📦 Type-safe with PHP 8.0+ features
+- 📦 Type-safe with PHP 8.0+ features and generics support
 - 🎯 Query builder access for complex queries
-- 📱 Pagination support with customizable defaults
+- 📱 Pagination support
 - 🛠️ Extensible base repository for custom implementations
 - 💡 IDE-friendly with comprehensive PHPDoc annotations
+- 🔒 Singleton pattern implementation for efficient resource usage
 
 ## Requirements
 
@@ -43,7 +43,8 @@ The simplest way to create a repository for any model:
 use Nejcc\LaravelQuerylayer\Facades\LaravelQuerylayer;
 use App\Models\User;
 
-// Create a repository for the User model
+// Get a repository instance for the User model
+// The same instance will be returned for subsequent calls with the same model
 $userRepository = LaravelQuerylayer::repository(User::class);
 
 // Basic operations
@@ -52,7 +53,7 @@ $user = $userRepository->find(1);
 $activeUsers = $userRepository->where(['is_active' => true]);
 
 // Pagination
-$paginatedUsers = $userRepository->paginate(20);
+$paginatedUsers = $userRepository->paginate();
 
 // Create and update
 $newUser = $userRepository->create([
@@ -120,23 +121,18 @@ The repository provides a comprehensive set of methods for database operations:
 | `query()` | Get the query builder instance |
 | `db()` | Get the raw DB query builder instance |
 
-## Configuration
+## Singleton Pattern
 
-Publish the configuration file:
+The package implements the singleton pattern for repository instances. This means:
 
-```bash
-php artisan vendor:publish --provider="Nejcc\LaravelQuerylayer\LaravelQuerylayerServiceProvider" --tag="config"
-```
-
-This will create a `config/querylayer.php` file with the following options:
-
-```php
-return [
-    'pagination_default' => env('QUERYLAYER_PAGINATION_DEFAULT', 15),
-];
-```
+- Each model class gets a single repository instance
+- Subsequent calls to `LaravelQuerylayer::repository()` with the same model return the same instance
+- This helps reduce memory usage and improves performance
+- Perfect for dependency injection and service container usage
 
 ## Testing
+
+The package includes a comprehensive test suite. Run the tests with:
 
 ```bash
 composer test
@@ -144,9 +140,7 @@ composer test
 
 ## Code Style
 
-This package follows the [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standard and the [PSR-4](https://www.php-fig.org/psr/psr-4/) autoloading standard.
-
-To format your code, you can use Laravel Pint:
+This package follows the [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standard. Format your code using Laravel Pint:
 
 ```bash
 # Format all files
@@ -172,7 +166,3 @@ If you discover any security related issues, please email info@after.si instead 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Laravel Package Boilerplate
-
-This package was generated using the [Laravel Package Boilerplate](https://laravelpackageboilerplate.com).
