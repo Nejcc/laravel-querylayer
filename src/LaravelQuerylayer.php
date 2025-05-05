@@ -23,7 +23,7 @@ final class LaravelQuerylayer
      */
     public static function repository(string $model): BaseRepository
     {
-        if (!isset(self::$repositories[$model])) {
+        if (! isset(self::$repositories[$model])) {
             self::$repositories[$model] = new class($model) extends BaseRepository
             {
                 protected string $modelClass;

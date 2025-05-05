@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace Nejcc\LaravelQuerylayer\Tests;
 
-use Orchestra\Testbench\TestCase as Orchestra;
-use Nejcc\LaravelQuerylayer\LaravelQuerylayerServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Nejcc\LaravelQuerylayer\LaravelQuerylayerServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
-class TestCase extends Orchestra
+final class TestCase extends Orchestra
 {
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
     }
 
     protected function getPackageProviders($app): array

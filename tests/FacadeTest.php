@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Nejcc\LaravelQuerylayer\Tests;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Nejcc\LaravelQuerylayer\LaravelQuerylayerFacade as LaravelQuerylayer;
 use Nejcc\LaravelQuerylayer\Tests\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class FacadeTest extends TestCase
+final class FacadeTest extends TestCase
 {
     use RefreshDatabase;
 
