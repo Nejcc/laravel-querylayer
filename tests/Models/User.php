@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 final class User extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
         'name',
         'email',
@@ -22,9 +22,24 @@ final class User extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
-    
+
     public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeRole($query, string $role)
+    {
+        return $query->where('role', $role);
     }
 }

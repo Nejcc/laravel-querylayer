@@ -6,22 +6,21 @@ namespace Nejcc\LaravelQuerylayer\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-final class Post extends Model
+final class Comment extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
         'user_id',
-        'title',
+        'post_id',
         'content',
-        'is_published',
+        'is_approved',
     ];
 
     protected $casts = [
-        'is_published' => 'boolean',
+        'is_approved' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -29,13 +28,13 @@ final class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function comments(): HasMany
+    public function post(): BelongsTo
     {
-        return $this->hasMany(Comment::class);
+        return $this->belongsTo(Post::class);
     }
 
-    public function scopePublished($query)
+    public function scopeApproved($query)
     {
-        return $query->where('is_published', true);
+        return $query->where('is_approved', true);
     }
 }
