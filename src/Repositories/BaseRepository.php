@@ -501,4 +501,106 @@ abstract class BaseRepository implements RepositoryInterface
     {
         return $this->applyTrashedState($this->applyEagerLoading($this->query()));
     }
+
+    /**
+     * Insert multiple records at once
+     *
+     * @param array<array<string, mixed>> $records
+     * @return bool
+     */
+    final public function insert(array $records): bool
+    {
+        try {
+            DB::beginTransaction();
+            foreach ($records as $record) {
+                $this->model->newInstance($record)->save();
+            }
+            DB::commit();
+            return true;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    /**
+     * Insert multiple records and get their IDs
+     *
+     * @param array<array<string, mixed>> $records
+     * @return array<int>
+     */
+    final public function insertGetIds(array $records): array
+    {
+        $ids = [];
+        try {
+            DB::beginTransaction();
+            foreach ($records as $record) {
+                $model = $this->model->newInstance($record);
+                $model->save();
+                $ids[] = $model->getKey();
+            }
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        return $ids;
+    }
+
+    /**
+     * Update multiple records based on a condition
+     *
+     * @param array<string, mixed> $values
+     * @param array<string, mixed> $conditions
+     * @return int Number of affected rows
+     */
+    final public function updateWhere(array $values, array $conditions): int
+    {
+        $query = $this->currentQuery->where($conditions);
+        $affected = $query->update($values);
+        $this->reset();
+        return $affected;
+    }
+
+    /**
+     * Delete multiple records based on a condition
+     *
+     * @param array<string, mixed> $conditions
+     * @return int Number of affected rows
+     */
+    final public function deleteWhere(array $conditions): int
+    {
+        $query = $this->currentQuery->where($conditions);
+        $affected = $query->delete();
+        $this->reset();
+        return $affected;
+    }
+
+    /**
+     * Process records in chunks
+     *
+     * @param int $chunkSize
+     * @param callable $callback
+     * @return bool
+     */
+    final public function chunk(int $chunkSize, callable $callback): bool
+    {
+        $result = $this->currentQuery->chunk($chunkSize, $callback);
+        $this->reset();
+        return $result;
+    }
+
+    /**
+     * Process records in chunks with cursor
+     *
+     * @param int $chunkSize
+     * @param callable $callback
+     * @return bool
+     */
+    final public function chunkById(int $chunkSize, callable $callback): bool
+    {
+        $result = $this->currentQuery->chunkById($chunkSize, $callback);
+        $this->reset();
+        return $result;
+    }
 }
