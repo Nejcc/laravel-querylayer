@@ -52,9 +52,9 @@ use App\Models\User;
 $userRepository = LaravelQuerylayer::repository(User::class);
 
 // Basic operations
-$users = $userRepository->all();
+$users = $userRepository->where(['is_active' => true])->paginate(15);
 $user = $userRepository->find(1);
-$activeUsers = $userRepository->where(['is_active' => true]);
+$activeUsers = $userRepository->where(['is_active' => true])->get();
 
 // Pagination
 $paginatedUsers = $userRepository->paginate();
@@ -71,11 +71,11 @@ $userRepository->update(1, ['name' => 'Jane Doe']);
 $userRepository->delete(1);
 
 // Eager loading relationships
-$usersWithPosts = $userRepository->with('posts')->all();
+$userWithPosts = $userRepository->with('posts')->find(1);
 
 // Soft deletes - if your model uses SoftDeletes
-$trashedUsers = $userRepository->withTrashed()->all();
-$onlyTrashedUsers = $userRepository->onlyTrashed()->all();
+$trashedUser = $userRepository->withTrashed()->find(5);
+$onlyTrashedUsers = $userRepository->onlyTrashed()->paginate(10);
 $userRepository->restore(1);
 $userRepository->forceDelete(1);
 
@@ -135,11 +135,12 @@ The repository provides a comprehensive set of methods for database operations:
 
 | Method | Description |
 |--------|-------------|
-| `all()` | Get all records |
+| `all()` | Get all records (use with caution for large datasets) |
+| `get()` | Get records for the current query |
 | `paginate(?int $perPage = null)` | Get paginated results |
 | `find(int|string $id)` | Find a record by ID |
 | `findBy(string $column, mixed $value)` | Find a record by column value |
-| `where(array $conditions)` | Get all records matching conditions |
+| `where(array $conditions)` | Add where conditions to the query |
 | `create(array $data)` | Create a new record |
 | `update(int|string $id, array $data)` | Update a record |
 | `delete(int|string $id)` | Delete a record |
@@ -161,21 +162,29 @@ The repository supports fluent method chaining for building complex queries:
 
 ```php
 // Chain methods for a single query
-$adminUsersPosts = $userRepository
+$adminUsers = $userRepository
     ->with('posts')
     ->where(['role' => 'admin'])
-    ->all();
+    ->paginate(15);  // Pagination instead of all() for large datasets
+
+// For limited dataset, you can use get()
+$recentPosts = $postRepository
+    ->query()
+    ->orderBy('created_at', 'desc')
+    ->limit(5)
+    ->get();
 
 // Query scopes are automatically reset after execution
 // So this query will NOT include any trashed records
-$activeUsers = $userRepository->where(['is_active' => true])->all();
+$activeUsers = $userRepository->where(['is_active' => true])->get();
 
 // You can also manually reset query scopes
 $userRepository
     ->withTrashed()
     ->with('posts')
     ->reset() // Reset all query scopes
-    ->all(); // Will NOT include trashed records or eager load posts
+    ->where(['is_admin' => true])
+    ->get(); // Will NOT include trashed records or eager load posts
 ```
 
 ## Singleton Pattern
@@ -211,7 +220,7 @@ Optimize database queries by eager loading relationships:
 
 - Use `with('relation')` to load a single relation
 - Use `with(['relation1', 'relation2'])` to load multiple relations
-- Chain with other methods: `with('posts')->where(['active' => true])`
+- Chain with other methods: `with('posts')->where(['active' => true])->get()`
 
 ## Testing
 
