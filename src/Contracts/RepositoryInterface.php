@@ -142,4 +142,11 @@ interface RepositoryInterface
      * @return self<TModel>
      */
     public function with(string|array $relations): self;
+    
+    /**
+     * Reset query scopes and eager loading.
+     *
+     * @return self<TModel>
+     */
+    public function reset(): self;
 }

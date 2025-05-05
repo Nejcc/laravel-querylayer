@@ -54,29 +54,44 @@ abstract class BaseRepository implements RepositoryInterface
 
     final public function all(): Collection
     {
-        return $this->applyTrashedState($this->applyEagerLoading($this->query()))->get();
+        $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->get();
+        $this->reset();
+        
+        return $result;
     }
 
     final public function paginate(?int $perPage = null): LengthAwarePaginator
     {
         $perPage = $perPage ?? (int) request()->input('per_page', config('database.pagination_default', 15));
 
-        return $this->applyTrashedState($this->applyEagerLoading($this->query()))->paginate($perPage);
+        $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->paginate($perPage);
+        $this->reset();
+        
+        return $result;
     }
 
     final public function find(int|string $id): ?Model
     {
-        return $this->applyTrashedState($this->applyEagerLoading($this->query()))->find($id);
+        $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->find($id);
+        $this->reset();
+        
+        return $result;
     }
 
     final public function findBy(string $column, mixed $value): ?Model
     {
-        return $this->applyTrashedState($this->applyEagerLoading($this->query()))->where($column, $value)->first();
+        $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->where($column, $value)->first();
+        $this->reset();
+        
+        return $result;
     }
 
     final public function where(array $conditions): Collection
     {
-        return $this->applyTrashedState($this->applyEagerLoading($this->query()))->where($conditions)->get();
+        $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->where($conditions)->get();
+        $this->reset();
+        
+        return $result;
     }
 
     final public function create(array $data): Model
@@ -156,6 +171,19 @@ abstract class BaseRepository implements RepositoryInterface
     final public function with(string|array $relations): self
     {
         $this->with = is_string($relations) ? [$relations] : $relations;
+        
+        return $this;
+    }
+    
+    /**
+     * Reset query scopes and eager loading.
+     *
+     * @return $this<TModel>
+     */
+    final public function reset(): self
+    {
+        $this->with = [];
+        $this->trashedState = 'none';
         
         return $this;
     }

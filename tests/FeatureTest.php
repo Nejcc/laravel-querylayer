@@ -186,7 +186,7 @@ final class FeatureTest extends TestCase
     public function it_can_eager_load_relations(): void
     {
         // For a real test, we'd need a related model, but we can
-        // at least test that the with() method sets the correct property
+        // at least test that the with property is correctly set
         
         // Create a record
         $user = $this->repository->create([
@@ -209,5 +209,70 @@ final class FeatureTest extends TestCase
         // Set multiple relations
         $this->repository->with(['posts', 'comments']);
         $this->assertEquals(['posts', 'comments'], $withProperty->getValue($this->repository));
+    }
+    
+    /** @test */
+    public function it_automatically_resets_query_scope_after_execution(): void
+    {
+        // Create test users
+        $admin = $this->repository->create([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
+            'role' => 'admin',
+        ]);
+        
+        $user = $this->repository->create([
+            'name' => 'Regular User',
+            'email' => 'user@example.com',
+            'role' => 'user',
+        ]);
+        
+        $this->repository->delete($user->id);
+        
+        // Use reflection to check properties
+        $reflection = new \ReflectionClass($this->repository);
+        $withProperty = $reflection->getProperty('with');
+        $withProperty->setAccessible(true);
+        $trashedProperty = $reflection->getProperty('trashedState');
+        $trashedProperty->setAccessible(true);
+        
+        // First query with eager loading and withTrashed
+        $this->repository->withTrashed()->with('posts')->all();
+        
+        // Properties should be reset after query
+        $this->assertEquals([], $withProperty->getValue($this->repository));
+        $this->assertEquals('none', $trashedProperty->getValue($this->repository));
+        
+        // Confirm that next query is not affected by previous scopes
+        $result = $this->repository->all();
+        
+        // Only the admin should be returned (regular user is deleted)
+        $this->assertCount(1, $result);
+        $this->assertEquals('admin@example.com', $result->first()->email);
+    }
+    
+    /** @test */
+    public function it_can_manually_reset_query_scope(): void
+    {
+        // Use reflection to check properties
+        $reflection = new \ReflectionClass($this->repository);
+        $withProperty = $reflection->getProperty('with');
+        $withProperty->setAccessible(true);
+        $trashedProperty = $reflection->getProperty('trashedState');
+        $trashedProperty->setAccessible(true);
+        
+        // Set scopes
+        $this->repository->withTrashed()->with('posts');
+        
+        // Properties should be set
+        $this->assertEquals(['posts'], $withProperty->getValue($this->repository));
+        $this->assertEquals('with', $trashedProperty->getValue($this->repository));
+        
+        // Reset manually
+        $this->repository->reset();
+        
+        // Properties should be reset
+        $this->assertEquals([], $withProperty->getValue($this->repository));
+        $this->assertEquals('none', $trashedProperty->getValue($this->repository));
     }
 } 
