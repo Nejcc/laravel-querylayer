@@ -222,6 +222,70 @@ Optimize database queries by eager loading relationships:
 - Use `with(['relation1', 'relation2'])` to load multiple relations
 - Chain with other methods: `with('posts')->where(['active' => true])->get()`
 
+## Direct Database Access with db()
+
+In addition to the Eloquent query builder accessible via `query()`, the repository provides raw database access through the `db()` method:
+
+```php
+// Get raw database query builder for direct table operations
+$usersTable = $userRepository->db();
+
+// Perform complex SQL operations
+$activeUsersByRole = $userRepository->db()
+    ->select('role', $userRepository->db()->raw('COUNT(*) as count'))
+    ->where('is_active', true)
+    ->groupBy('role')
+    ->orderBy('count', 'desc')
+    ->get();
+
+// Complex joins and aggregates
+$userStats = $userRepository->db()
+    ->select(
+        'users.id', 
+        'users.name',
+        $userRepository->db()->raw('COUNT(posts.id) as total_posts'),
+        $userRepository->db()->raw('SUM(CASE WHEN posts.is_published = 1 THEN 1 ELSE 0 END) as published_posts')
+    )
+    ->leftJoin('posts', 'users.id', '=', 'posts.user_id')
+    ->groupBy('users.id', 'users.name')
+    ->having('total_posts', '>', 0)
+    ->orderBy('total_posts', 'desc')
+    ->get();
+
+// Useful for complex search functionality
+$query = $userRepository->db();
+if ($request->has('search')) {
+    $query->where('name', 'like', "%{$request->search}%");
+}
+if ($request->has('role')) {
+    $query->where('role', $request->role);
+}
+$results = $query->orderBy('name')->get();
+
+// Direct database updates or bulk operations
+$affected = $userRepository->db()
+    ->whereIn('id', $userIds)
+    ->update(['is_active' => false]);
+```
+
+The `db()` method provides:
+
+- Direct access to Laravel's Query Builder for raw SQL operations
+- Perfect for complex joins, aggregations, and statistical queries
+- Useful for bulk operations that would be inefficient with Eloquent
+- Access to advanced SQL features not available in Eloquent
+
+When to use `db()` vs `query()`:
+
+- Use `query()` when you need model features like relationships, accessors/mutators, and model events
+- Use `db()` when you need raw performance, complex joins, or SQL-specific functionality
+- Choose `db()` for statistical queries and reporting where you don't need full model instances
+
+You can find more examples of using the `db()` method in the demo repositories:
+- UserRepository - examples of grouping and counting
+- PostRepository - examples of joins and complex filtering
+- CommentRepository - examples of aggregation and bulk operations
+
 ## Testing
 
 The package includes a comprehensive test suite. Run the tests with:
