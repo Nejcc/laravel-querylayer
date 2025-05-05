@@ -9,13 +9,13 @@ use Nejcc\LaravelQuerylayer\Tests\Models\Post;
 
 final class PostRepository extends BaseRepository
 {
-    protected function model(): string
-    {
-        return Post::class;
-    }
-    
     public function getPublishedPosts()
     {
         return $this->query()->where('is_published', true)->get();
     }
-} 
+
+    protected function model(): string
+    {
+        return Post::class;
+    }
+}
