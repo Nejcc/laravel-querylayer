@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laravel QueryLayer Documentation</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <!-- Prism CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         .sidebar {
@@ -16,13 +19,56 @@
         .content {
             max-width: 65ch;
         }
+        /* Enhanced code block styling */
         pre {
             background: #1a1a1a !important;
             border-radius: 0.5rem;
-            margin: 1rem 0;
+            margin: 1.5rem 0;
+            padding: 1rem !important;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        code {
-            font-family: 'Fira Code', monospace;
+        pre code {
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            padding: 0 !important;
+            background: transparent !important;
+        }
+        /* Code block header */
+        .code-header {
+            background: #2d2d2d;
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e0e0e0;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #404040;
+        }
+        /* Line numbers */
+        .line-numbers .line-numbers-rows {
+            border-right: 1px solid #404040;
+            padding-right: 1rem;
+            margin-right: 1rem;
+        }
+        /* Copy button */
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background: #404040;
+            border-radius: 0.25rem;
+            color: #e0e0e0;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-button:hover {
+            background: #505050;
         }
         .search-highlight {
             background-color: rgba(255, 255, 0, 0.3);
@@ -34,6 +80,15 @@
         }
         .search-result:hover {
             transform: translateX(0.5rem);
+        }
+        /* Inline code styling */
+        code:not(pre code) {
+            background: #f3f4f6;
+            padding: 0.2em 0.4em;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+            color: #1f2937;
+            font-family: 'Fira Code', 'Consolas', monospace;
         }
     </style>
 </head>
@@ -266,12 +321,18 @@ $activeUsersByRole = $userRepository->db()
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-php.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-bash.min.js"></script>
+    <!-- Add Prism plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/toolbar/prism-toolbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/copy-to-clipboard/prism-copy-to-clipboard.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
     
     <script>
-        const { createApp, ref, computed } = Vue
+        const { createApp, ref, computed, onMounted } = Vue
 
         createApp({
             setup() {
@@ -350,6 +411,28 @@ $activeUsersByRole = $userRepository->db()
                 sections.forEach(section => {
                     const element = document.getElementById(section.id)
                     if (element) observer.observe(element)
+                })
+
+                // Add copy button functionality
+                const addCopyButtons = () => {
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        const button = document.createElement('button')
+                        button.className = 'copy-button'
+                        button.textContent = 'Copy'
+                        button.addEventListener('click', () => {
+                            navigator.clipboard.writeText(block.textContent)
+                            button.textContent = 'Copied!'
+                            setTimeout(() => {
+                                button.textContent = 'Copy'
+                            }, 2000)
+                        })
+                        block.parentElement.appendChild(button)
+                    })
+                }
+
+                // Call after Vue mounts
+                onMounted(() => {
+                    addCopyButtons()
                 })
 
                 return {
