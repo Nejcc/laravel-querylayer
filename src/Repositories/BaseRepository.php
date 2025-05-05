@@ -29,7 +29,7 @@ abstract class BaseRepository implements RepositoryInterface
      * Trashed state for query builder.
      */
     protected string $trashedState = 'none';
-    
+
     /**
      * Relations to eager load.
      *
@@ -56,7 +56,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->get();
         $this->reset();
-        
+
         return $result;
     }
 
@@ -66,7 +66,7 @@ abstract class BaseRepository implements RepositoryInterface
 
         $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->paginate($perPage);
         $this->reset();
-        
+
         return $result;
     }
 
@@ -74,7 +74,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->find($id);
         $this->reset();
-        
+
         return $result;
     }
 
@@ -82,7 +82,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->where($column, $value)->first();
         $this->reset();
-        
+
         return $result;
     }
 
@@ -90,7 +90,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $result = $this->applyTrashedState($this->applyEagerLoading($this->query()))->where($conditions)->get();
         $this->reset();
-        
+
         return $result;
     }
 
@@ -112,12 +112,13 @@ abstract class BaseRepository implements RepositoryInterface
 
         return $record ? $record->delete() : false;
     }
-    
+
     /**
      * Execute a callback within a transaction.
      *
      * @template TReturn
-     * @param callable(): TReturn $callback
+     *
+     * @param  callable(): TReturn  $callback
      * @return TReturn
      *
      * @throws Throwable
@@ -126,11 +127,11 @@ abstract class BaseRepository implements RepositoryInterface
     {
         return DB::transaction($callback);
     }
-    
+
     /**
      * Create a new record within a transaction.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return TModel
      *
      * @throws Throwable
@@ -141,11 +142,11 @@ abstract class BaseRepository implements RepositoryInterface
             return $this->create($data);
         });
     }
-    
+
     /**
      * Update record by ID within a transaction.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      *
      * @throws Throwable
      */
@@ -153,28 +154,28 @@ abstract class BaseRepository implements RepositoryInterface
     {
         return $this->transaction(function () use ($id, $data) {
             $result = $this->update($id, $data);
-            
-            if (!$result) {
+
+            if (! $result) {
                 throw new RuntimeException("Failed to update record with ID {$id}");
             }
-            
+
             return $result;
         });
     }
-    
+
     /**
      * Eager load relations.
      *
-     * @param string|array<string|callable> $relations
+     * @param  string|array<string|callable>  $relations
      * @return $this<TModel>
      */
     final public function with(string|array $relations): self
     {
         $this->with = is_string($relations) ? [$relations] : $relations;
-        
+
         return $this;
     }
-    
+
     /**
      * Reset query scopes and eager loading.
      *
@@ -184,7 +185,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $this->with = [];
         $this->trashedState = 'none';
-        
+
         return $this;
     }
 
@@ -212,10 +213,10 @@ abstract class BaseRepository implements RepositoryInterface
     final public function withTrashed(): self
     {
         $this->trashedState = 'with';
-        
+
         return $this;
     }
-    
+
     /**
      * Only include soft deleted records in the results.
      *
@@ -224,43 +225,43 @@ abstract class BaseRepository implements RepositoryInterface
     final public function onlyTrashed(): self
     {
         $this->trashedState = 'only';
-        
+
         return $this;
     }
-    
+
     /**
      * Restore a soft deleted record.
      */
     final public function restore(int|string $id): bool
     {
-        if (!$this->usesSoftDeletes()) {
+        if (! $this->usesSoftDeletes()) {
             return false;
         }
-        
+
         $record = $this->withTrashed()->find($id);
-        
-        if (!$record) {
+
+        if (! $record) {
             return false;
         }
-        
+
         return $record->restore();
     }
-    
+
     /**
      * Permanently delete a soft deleted record.
      */
     final public function forceDelete(int|string $id): bool
     {
-        if (!$this->usesSoftDeletes()) {
+        if (! $this->usesSoftDeletes()) {
             return false;
         }
-        
+
         $record = $this->withTrashed()->find($id);
-        
-        if (!$record) {
+
+        if (! $record) {
             return false;
         }
-        
+
         return $record->forceDelete();
     }
 
@@ -279,7 +280,7 @@ abstract class BaseRepository implements RepositoryInterface
 
         return $model;
     }
-    
+
     /**
      * Check if the model uses soft deletes.
      */
@@ -290,30 +291,30 @@ abstract class BaseRepository implements RepositoryInterface
             class_uses_recursive($this->model())
         );
     }
-    
+
     /**
      * Apply the trashed state to the query.
      *
-     * @param Builder<TModel> $query
+     * @param  Builder<TModel>  $query
      * @return Builder<TModel>
      */
     protected function applyTrashedState(Builder $query): Builder
     {
-        if (!$this->usesSoftDeletes()) {
+        if (! $this->usesSoftDeletes()) {
             return $query;
         }
-        
-        return match($this->trashedState) {
+
+        return match ($this->trashedState) {
             'with' => $query->withTrashed(),
             'only' => $query->onlyTrashed(),
             default => $query
         };
     }
-    
+
     /**
      * Apply eager loading of relations to the query.
      *
-     * @param Builder<TModel> $query
+     * @param  Builder<TModel>  $query
      * @return Builder<TModel>
      */
     protected function applyEagerLoading(Builder $query): Builder
@@ -321,7 +322,7 @@ abstract class BaseRepository implements RepositoryInterface
         if (empty($this->with)) {
             return $query;
         }
-        
+
         return $query->with($this->with);
     }
 }

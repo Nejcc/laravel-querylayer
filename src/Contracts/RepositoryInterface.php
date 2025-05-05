@@ -8,6 +8,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Throwable;
 
 /**
  * @template TModel of Model
@@ -110,10 +111,11 @@ interface RepositoryInterface
      * Execute a callback within a transaction.
      *
      * @template TReturn
-     * @param callable(): TReturn $callback
+     *
+     * @param  callable(): TReturn  $callback
      * @return TReturn
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function transaction(callable $callback): mixed;
 
@@ -122,8 +124,8 @@ interface RepositoryInterface
      *
      * @param  array<string, mixed>  $data
      * @return TModel
-     * 
-     * @throws \Throwable
+     *
+     * @throws Throwable
      */
     public function createOrFail(array $data): Model;
 
@@ -131,18 +133,19 @@ interface RepositoryInterface
      * Update record by ID within a transaction.
      *
      * @param  array<string, mixed>  $data
-     * @throws \Throwable
+     *
+     * @throws Throwable
      */
     public function updateOrFail(int|string $id, array $data): bool;
 
     /**
      * Eager load relations.
      *
-     * @param string|array<string|callable> $relations
+     * @param  string|array<string|callable>  $relations
      * @return self<TModel>
      */
     public function with(string|array $relations): self;
-    
+
     /**
      * Reset query scopes and eager loading.
      *
