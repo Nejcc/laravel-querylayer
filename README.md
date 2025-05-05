@@ -322,3 +322,59 @@ If you discover any security related issues, please email info@after.si instead 
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## Model Interface
+
+You can also use the repository functionality directly on your models by implementing the `ModelInterface` and using the `HasRepository` trait:
+
+```php
+use Nejcc\LaravelQuerylayer\Contracts\ModelInterface;
+use Nejcc\LaravelQuerylayer\Traits\HasRepository;
+
+class User extends Model implements ModelInterface
+{
+    use HasRepository;
+
+    protected static function getRepositoryClass(): string
+    {
+        return UserRepository::class;
+    }
+}
+```
+
+Now you can use repository methods directly on your model:
+
+```php
+// Create a new user
+$user = User::createRecord([
+    'name' => 'John Doe',
+    'email' => 'john@example.com'
+]);
+
+// Find a user
+$user = User::findById(1);
+$user = User::findByColumn('email', 'john@example.com');
+
+// Get all users
+$users = User::getAll();
+
+// Get paginated users
+$users = User::getPaginated(10);
+
+// Get users with conditions
+$users = User::getWhere(['role' => 'admin']);
+
+// Update a user
+User::updateRecord(1, ['name' => 'Jane Doe']);
+
+// Delete a user
+User::deleteRecord(1);
+
+// Get the query builder
+$query = User::getQuery();
+
+// Get the repository instance
+$repository = User::getRepository();
+```
+
+This approach gives you the flexibility to use repository methods either through the repository class or directly on your models.
