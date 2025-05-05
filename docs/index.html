@@ -139,6 +139,57 @@
             scroll-behavior: smooth;
             scroll-padding-top: 5rem;
         }
+
+        /* Submenu styling */
+        .submenu {
+            margin-left: 1rem;
+            border-left: 2px solid #e5e7eb;
+            padding-left: 0.5rem;
+        }
+
+        .submenu-item {
+            font-size: 0.875rem;
+            color: #4b5563;
+            transition: all 0.2s;
+        }
+
+        .submenu-item:hover {
+            color: #3b82f6;
+        }
+
+        .submenu-item.active {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        /* Nested content styling */
+        .subsection {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .subsection:first-child {
+            margin-top: 1rem;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        /* Collapsible sections */
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.expanded {
+            max-height: 1000px;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -190,185 +241,45 @@
                 <div class="w-64 flex-shrink-0 pr-8">
                     <div class="sidebar overflow-y-auto">
                         <nav class="space-y-1">
-                            <a v-for="section in sections" 
-                               :key="section.id"
-                               :href="'#' + section.id"
-                               class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                               :class="{ 'bg-blue-50 text-blue-700': activeSection === section.id }"
-                               @click="setActiveSection(section.id)">
-                                {{ section.title }}
-                            </a>
+                            <template v-for="section in sections" :key="section.id">
+                                <div class="collapsible" @click="toggleSection(section.id)">
+                                    <a :href="'#' + section.id"
+                                       class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                                       :class="{ 'bg-blue-50 text-blue-700': activeSection === section.id }"
+                                       @click.prevent="setActiveSection(section.id)">
+                                        {{ section.title }}
+                                    </a>
+                                </div>
+                                <div class="submenu collapsible-content" :class="{ 'expanded': expandedSections.includes(section.id) }">
+                                    <a v-for="subsection in section.subsections"
+                                       :key="subsection.id"
+                                       :href="'#' + subsection.id"
+                                       class="block px-3 py-1.5 submenu-item"
+                                       :class="{ 'active': activeSubsection === subsection.id }"
+                                       @click="setActiveSubsection(subsection.id)">
+                                        {{ subsection.title }}
+                                    </a>
+                                </div>
+                            </template>
                         </nav>
                     </div>
                 </div>
 
                 <!-- Content -->
                 <div class="flex-1 content">
-                    <section id="introduction" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'introduction' }">
-                        <h2 class="text-3xl font-bold mb-4">Introduction</h2>
-                        <p class="text-gray-700 mb-4">
-                            Laravel QueryLayer is a powerful and flexible repository pattern implementation for Laravel applications. 
-                            It provides a clean and maintainable way to handle database operations in your Laravel projects, with 
-                            built-in singleton pattern support for efficient repository management.
-                        </p>
-                        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                                    </svg>
+                    <template v-for="section in sections" :key="section.id">
+                        <section :id="section.id" class="mb-12 section-highlight" :class="{ 'active': activeSection === section.id }">
+                            <h2 class="text-3xl font-bold mb-4">{{ section.title }}</h2>
+                            <p class="text-gray-700 mb-4">{{ section.description }}</p>
+                            
+                            <template v-for="subsection in section.subsections" :key="subsection.id">
+                                <div :id="subsection.id" class="subsection">
+                                    <h3 class="text-2xl font-semibold mb-3">{{ subsection.title }}</h3>
+                                    <div v-html="subsection.content"></div>
                                 </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-blue-800">Key Features</h3>
-                                    <div class="mt-2 text-sm text-blue-700">
-                                        <ul class="list-disc pl-5 space-y-1">
-                                            <li>Quick repository creation for any Eloquent model</li>
-                                            <li>Full CRUD operations out of the box</li>
-                                            <li>Type-safe with PHP 8.0+ features</li>
-                                            <li>Query builder access for complex queries</li>
-                                            <li>Pagination support</li>
-                                            <li>Extensible base repository</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="installation" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'installation' }">
-                        <h2 class="text-3xl font-bold mb-4">Installation</h2>
-                        <p class="text-gray-700 mb-4">
-                            You can install the package via composer:
-                        </p>
-                        <pre><code class="language-bash">composer require nejcc/laravel-querylayer</code></pre>
-                        <p class="text-gray-700 mt-4">
-                            The package will automatically register its service provider.
-                        </p>
-                    </section>
-
-                    <section id="model-interface" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'model-interface' }">
-                        <h2 class="text-3xl font-bold mb-4">Model Interface</h2>
-                        <p class="text-gray-700 mb-4">
-                            You can use repository functionality directly on your models by implementing the 
-                            <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">ModelInterface</code> and using the 
-                            <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">HasRepository</code> trait:
-                        </p>
-                        <pre><code class="language-php">use Nejcc\LaravelQuerylayer\Contracts\ModelInterface;
-use Nejcc\LaravelQuerylayer\Traits\HasRepository;
-
-class User extends Model implements ModelInterface
-{
-    use HasRepository;
-
-    protected static function getRepositoryClass(): string
-    {
-        return UserRepository::class;
-    }
-}</code></pre>
-
-                        <h3 class="text-2xl font-bold mt-8 mb-4">Usage Examples</h3>
-                        <pre><code class="language-php">// Create a new user
-$user = User::createRecord([
-    'name' => 'John Doe',
-    'email' => 'john@example.com'
-]);
-
-// Find a user
-$user = User::findById(1);
-$user = User::findByColumn('email', 'john@example.com');
-
-// Get all users
-$users = User::getAll();
-
-// Get paginated users
-$users = User::getPaginated(10);
-
-// Get users with conditions
-$users = User::getWhere(['role' => 'admin']);
-
-// Update a user
-User::updateRecord(1, ['name' => 'Jane Doe']);
-
-// Delete a user
-User::deleteRecord(1);
-
-// Get the query builder
-$query = User::getQuery();
-
-// Get the repository instance
-$repository = User::getRepository();</code></pre>
-                    </section>
-
-                    <section id="repository-pattern" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'repository-pattern' }">
-                        <h2 class="text-3xl font-bold mb-4">Repository Pattern</h2>
-                        <p class="text-gray-700 mb-4">
-                            For more complex scenarios, you can extend the <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">BaseRepository</code>:
-                        </p>
-                        <pre><code class="language-php">use Nejcc\LaravelQuerylayer\Repositories\BaseRepository;
-use App\Models\User;
-
-class UserRepository extends BaseRepository
-{
-    protected function model(): string
-    {
-        return User::class;
-    }
-
-    public function getActiveAdminsPaginated(?int $perPage = null): LengthAwarePaginator
-    {
-        return $this->getActiveAdminsQuery()->paginate($perPage);
-    }
-
-    public function getActiveAdminsQuery(): Builder
-    {
-        return $this->query()
-            ->where('is_active', true)
-            ->where('role', 'admin');
-    }
-}</code></pre>
-                    </section>
-
-                    <section id="advanced-features" class="mb-12 section-highlight" :class="{ 'active': activeSection === 'advanced-features' }">
-                        <h2 class="text-3xl font-bold mb-4">Advanced Features</h2>
-                        
-                        <h3 class="text-2xl font-bold mt-8 mb-4">Method Chaining</h3>
-                        <pre><code class="language-php">// Chain methods for a single query
-$adminUsers = $userRepository
-    ->with('posts')
-    ->where(['role' => 'admin'])
-    ->paginate(15);
-
-// For limited dataset
-$recentPosts = $postRepository
-    ->query()
-    ->orderBy('created_at', 'desc')
-    ->limit(5)
-    ->get();</code></pre>
-
-                        <h3 class="text-2xl font-bold mt-8 mb-4">Transactions</h3>
-                        <pre><code class="language-php">// Wrap multiple operations in a transaction
-$userRepository->transaction(function () use ($userRepository) {
-    $user = $userRepository->create(['name' => 'Transaction User']);
-    $userRepository->update($user->id, ['name' => 'Updated User']);
-    return $user;
-});
-
-// Or use the convenient methods
-$user = $userRepository->createOrFail(['name' => 'Safe Create']);
-$success = $userRepository->updateOrFail(1, ['name' => 'Safe Update']);</code></pre>
-
-                        <h3 class="text-2xl font-bold mt-8 mb-4">Direct Database Access</h3>
-                        <pre><code class="language-php">// Get raw database query builder
-$usersTable = $userRepository->db();
-
-// Complex SQL operations
-$activeUsersByRole = $userRepository->db()
-    ->select('role', $userRepository->db()->raw('COUNT(*) as count'))
-    ->where('is_active', true)
-    ->groupBy('role')
-    ->orderBy('count', 'desc')
-    ->get();</code></pre>
-                    </section>
+                            </template>
+                        </section>
+                    </template>
                 </div>
             </div>
         </div>
@@ -391,16 +302,483 @@ $activeUsersByRole = $userRepository->db()
             setup() {
                 const searchQuery = ref('')
                 const activeSection = ref('introduction')
+                const activeSubsection = ref('')
+                const expandedSections = ref(['introduction'])
+                const searchResults = ref([])
+                
                 const sections = [
-                    { id: 'introduction', title: 'Introduction' },
-                    { id: 'installation', title: 'Installation' },
-                    { id: 'quick-start', title: 'Quick Start' },
-                    { id: 'model-interface', title: 'Model Interface' },
-                    { id: 'repository-pattern', title: 'Repository Pattern' },
-                    { id: 'advanced-features', title: 'Advanced Features' }
+                    {
+                        id: 'introduction',
+                        title: 'Introduction',
+                        description: 'Get started with Laravel QueryLayer, a powerful repository pattern implementation for Laravel applications.',
+                        subsections: [
+                            {
+                                id: 'introduction-overview',
+                                title: 'Overview',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        Laravel QueryLayer provides a clean and maintainable way to handle database operations 
+                                        in your Laravel projects, with built-in singleton pattern support for efficient 
+                                        repository management.
+                                    </p>
+                                    <p class="text-gray-700 mb-4">
+                                        This package is designed to simplify your database interactions while maintaining 
+                                        type safety and following Laravel's best practices. It's perfect for projects that 
+                                        need a structured approach to database operations without sacrificing flexibility.
+                                    </p>
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <h3 class="text-sm font-medium text-blue-800">Key Features</h3>
+                                                <div class="mt-2 text-sm text-blue-700">
+                                                    <ul class="list-disc pl-5 space-y-1">
+                                                        <li>Quick repository creation for any Eloquent model</li>
+                                                        <li>Full CRUD operations out of the box</li>
+                                                        <li>Type-safe with PHP 8.0+ features</li>
+                                                        <li>Query builder access for complex queries</li>
+                                                        <li>Pagination support</li>
+                                                        <li>Extensible base repository</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            },
+                            {
+                                id: 'introduction-requirements',
+                                title: 'Requirements',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        Before you begin, ensure your development environment meets the following requirements:
+                                    </p>
+                                    <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                                        <li>PHP 8.0 or higher - Required for type safety and modern PHP features</li>
+                                        <li>Laravel 8.0 or higher - Ensures compatibility with modern Laravel features</li>
+                                        <li>Composer for package management - Required for installation and dependency management</li>
+                                    </ul>
+                                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-yellow-700">
+                                                    While PHP 8.0 is the minimum requirement, we recommend using PHP 8.1 or higher 
+                                                    to take advantage of all modern PHP features and improvements.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            }
+                        ]
+                    },
+                    {
+                        id: 'installation',
+                        title: 'Installation',
+                        description: 'Learn how to install and configure Laravel QueryLayer in your project.',
+                        subsections: [
+                            {
+                                id: 'installation-composer',
+                                title: 'Via Composer',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        The recommended way to install Laravel QueryLayer is through Composer. This ensures 
+                                        all dependencies are properly managed and the package is correctly integrated into 
+                                        your Laravel application.
+                                    </p>
+                                    <pre><code class="language-bash">composer require nejcc/laravel-querylayer</code></pre>
+                                    <p class="text-gray-700 mt-4">
+                                        After installation, the package will automatically register its service provider. 
+                                        You can verify the installation by checking your <code>composer.json</code> file, 
+                                        which should now include the package in its dependencies.
+                                    </p>
+                                `
+                            },
+                            {
+                                id: 'installation-configuration',
+                                title: 'Configuration',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        While Laravel QueryLayer works out of the box with sensible defaults, you can 
+                                        customize its behavior by publishing the configuration file. This is optional but 
+                                        recommended for projects that need specific configurations.
+                                    </p>
+                                    <pre><code class="language-bash">php artisan vendor:publish --provider="Nejcc\LaravelQuerylayer\QueryLayerServiceProvider"</code></pre>
+                                    <p class="text-gray-700 mt-4">
+                                        This command will publish the configuration file to <code>config/querylayer.php</code>. 
+                                        Here you can customize various aspects of the package, such as:
+                                    </p>
+                                    <ul class="list-disc pl-5 space-y-2 text-gray-700 mt-4">
+                                        <li>Default pagination settings</li>
+                                        <li>Cache configuration</li>
+                                        <li>Repository naming conventions</li>
+                                        <li>Custom model interfaces</li>
+                                    </ul>
+                                `
+                            }
+                        ]
+                    },
+                    {
+                        id: 'model-interface',
+                        title: 'Model Interface',
+                        description: 'Learn how to use repository functionality directly on your models.',
+                        subsections: [
+                            {
+                                id: 'model-interface-setup',
+                                title: 'Basic Setup',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        The Model Interface feature allows you to use repository functionality directly on 
+                                        your Eloquent models. This provides a clean and intuitive way to interact with your 
+                                        data while maintaining the benefits of the repository pattern.
+                                    </p>
+                                    <p class="text-gray-700 mb-4">
+                                        To implement this feature, your model needs to:
+                                    </p>
+                                    <ol class="list-decimal pl-5 space-y-2 text-gray-700 mb-4">
+                                        <li>Implement the <code>ModelInterface</code> contract</li>
+                                        <li>Use the <code>HasRepository</code> trait</li>
+                                        <li>Define the repository class to use</li>
+                                    </ol>
+                                    <pre><code class="language-php">use Nejcc\LaravelQuerylayer\Contracts\ModelInterface;
+use Nejcc\LaravelQuerylayer\Traits\HasRepository;
+
+class User extends Model implements ModelInterface
+{
+    use HasRepository;
+
+    protected static function getRepositoryClass(): string
+    {
+        return UserRepository::class;
+    }
+}</code></pre>
+                                    <p class="text-gray-700 mt-4">
+                                        This setup provides a seamless integration between your models and repositories, 
+                                        allowing you to use repository methods directly on your model instances.
+                                    </p>
+                                `
+                            },
+                            {
+                                id: 'model-interface-usage',
+                                title: 'Usage Examples',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        Once you've set up the model interface, you can use repository methods directly on 
+                                        your models. Here are some common use cases:
+                                    </p>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Basic CRUD Operations</h4>
+                                        <pre><code class="language-php">// Create a new user
+$user = User::createRecord([
+    'name' => 'John Doe',
+    'email' => 'john@example.com'
+]);
+
+// Find a user
+$user = User::findById(1);
+$user = User::findByColumn('email', 'john@example.com');
+
+// Get all users
+$users = User::getAll();
+
+// Get paginated users
+$users = User::getPaginated(10);
+
+// Get users with conditions
+$users = User::getWhere(['role' => 'admin']);
+
+// Update a user
+User::updateRecord(1, ['name' => 'Jane Doe']);
+
+// Delete a user
+User::deleteRecord(1);</code></pre>
+                                    </div>
+
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Advanced Operations</h4>
+                                        <pre><code class="language-php">// Get the query builder
+$query = User::getQuery();
+
+// Get the repository instance
+$repository = User::getRepository();</code></pre>
+                                    </div>
+
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-blue-700">
+                                                    The model interface provides a convenient way to access repository 
+                                                    functionality while maintaining the benefits of the repository pattern. 
+                                                    This approach is particularly useful for simple CRUD operations and 
+                                                    when you want to keep your code clean and intuitive.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            }
+                        ]
+                    },
+                    {
+                        id: 'repository-pattern',
+                        title: 'Repository Pattern',
+                        description: 'Learn how to implement and extend the repository pattern.',
+                        subsections: [
+                            {
+                                id: 'repository-pattern-basic',
+                                title: 'Basic Repository',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        The repository pattern provides a clean abstraction layer between your domain logic 
+                                        and data access. Laravel QueryLayer makes it easy to implement this pattern in your 
+                                        Laravel applications.
+                                    </p>
+                                    <p class="text-gray-700 mb-4">
+                                        To create a basic repository, extend the <code>BaseRepository</code> class and 
+                                        specify your model:
+                                    </p>
+                                    <pre><code class="language-php">use Nejcc\LaravelQuerylayer\Repositories\BaseRepository;
+use App\Models\User;
+
+class UserRepository extends BaseRepository
+{
+    protected function model(): string
+    {
+        return User::class;
+    }
+}</code></pre>
+                                    <p class="text-gray-700 mt-4">
+                                        This basic setup provides you with all the essential CRUD operations and query 
+                                        building capabilities. The repository will automatically handle model instantiation 
+                                        and basic database operations.
+                                    </p>
+                                `
+                            },
+                            {
+                                id: 'repository-pattern-advanced',
+                                title: 'Advanced Usage',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        For more complex scenarios, you can extend the basic repository with custom methods 
+                                        and query scopes. This allows you to encapsulate complex database operations and 
+                                        business logic within your repository.
+                                    </p>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Custom Repository Methods</h4>
+                                        <pre><code class="language-php">class UserRepository extends BaseRepository
+{
+    public function getActiveAdminsPaginated(?int $perPage = null): LengthAwarePaginator
+    {
+        return $this->getActiveAdminsQuery()->paginate($perPage);
+    }
+
+    public function getActiveAdminsQuery(): Builder
+    {
+        return $this->query()
+            ->where('is_active', true)
+            ->where('role', 'admin');
+    }
+}</code></pre>
+                                    </div>
+
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-blue-700">
+                                                    Advanced repository methods help you maintain clean and maintainable code 
+                                                    by encapsulating complex database operations. This approach is particularly 
+                                                    useful for business logic that involves multiple database queries or 
+                                                    complex conditions.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            }
+                        ]
+                    },
+                    {
+                        id: 'advanced-features',
+                        title: 'Advanced Features',
+                        description: 'Explore advanced features and best practices.',
+                        subsections: [
+                            {
+                                id: 'advanced-features-chaining',
+                                title: 'Method Chaining',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        Laravel QueryLayer supports method chaining for building complex queries. This 
+                                        allows you to create readable and maintainable query chains while maintaining 
+                                        type safety.
+                                    </p>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Query Building</h4>
+                                        <pre><code class="language-php">// Chain methods for a single query
+$adminUsers = $userRepository
+    ->with('posts')
+    ->where(['role' => 'admin'])
+    ->paginate(15);
+
+// For limited dataset
+$recentPosts = $postRepository
+    ->query()
+    ->orderBy('created_at', 'desc')
+    ->limit(5)
+    ->get();</code></pre>
+                                    </div>
+
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-blue-700">
+                                                    Method chaining provides a fluent interface for building queries, making 
+                                                    your code more readable and maintainable. Each method in the chain 
+                                                    returns a new query builder instance, allowing you to build complex 
+                                                    queries step by step.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            },
+                            {
+                                id: 'advanced-features-transactions',
+                                title: 'Transactions',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        Database transactions ensure data integrity by grouping multiple operations into a 
+                                        single atomic unit. Laravel QueryLayer provides convenient methods for working with 
+                                        transactions.
+                                    </p>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Transaction Methods</h4>
+                                        <pre><code class="language-php">// Wrap multiple operations in a transaction
+$userRepository->transaction(function () use ($userRepository) {
+    $user = $userRepository->create(['name' => 'Transaction User']);
+    $userRepository->update($user->id, ['name' => 'Updated User']);
+    return $user;
+});
+
+// Or use the convenient methods
+$user = $userRepository->createOrFail(['name' => 'Safe Create']);
+$success = $userRepository->updateOrFail(1, ['name' => 'Safe Update']);</code></pre>
+                                    </div>
+
+                                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-yellow-700">
+                                                    Always use transactions when performing multiple related database 
+                                                    operations. This ensures that either all operations succeed or none of 
+                                                    them do, maintaining data consistency.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            },
+                            {
+                                id: 'advanced-features-database',
+                                title: 'Direct Database Access',
+                                content: `
+                                    <p class="text-gray-700 mb-4">
+                                        While the repository pattern provides a clean abstraction, sometimes you need direct 
+                                        access to the database for complex operations. Laravel QueryLayer allows you to 
+                                        access the database directly when needed.
+                                    </p>
+                                    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                        <h4 class="font-semibold text-gray-800 mb-2">Database Operations</h4>
+                                        <pre><code class="language-php">// Get raw database query builder
+$usersTable = $userRepository->db();
+
+// Complex SQL operations
+$activeUsersByRole = $userRepository->db()
+    ->select('role', $userRepository->db()->raw('COUNT(*) as count'))
+    ->where('is_active', true)
+    ->groupBy('role')
+    ->orderBy('count', 'desc')
+    ->get();</code></pre>
+                                    </div>
+
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+                                        <div class="flex">
+                                            <div class="flex-shrink-0">
+                                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm text-blue-700">
+                                                    Direct database access is useful for complex queries that can't be easily 
+                                                    expressed through the repository pattern. However, use this feature 
+                                                    sparingly and prefer repository methods when possible to maintain code 
+                                                    consistency and maintainability.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `
+                            }
+                        ]
+                    }
                 ]
 
-                const searchResults = ref([])
+                // Define all functions first
+                const setActiveSection = (sectionId) => {
+                    activeSection.value = sectionId
+                    if (!expandedSections.value.includes(sectionId)) {
+                        expandedSections.value.push(sectionId)
+                    }
+                }
+
+                const setActiveSubsection = (subsectionId) => {
+                    activeSubsection.value = subsectionId
+                    const section = sections.find(s => s.subsections.some(sub => sub.id === subsectionId))
+                    if (section) {
+                        activeSection.value = section.id
+                        if (!expandedSections.value.includes(section.id)) {
+                            expandedSections.value.push(section.id)
+                        }
+                    }
+                }
+
+                const toggleSection = (sectionId) => {
+                    const index = expandedSections.value.indexOf(sectionId)
+                    if (index === -1) {
+                        expandedSections.value.push(sectionId)
+                    } else {
+                        expandedSections.value.splice(index, 1)
+                    }
+                }
 
                 const performSearch = () => {
                     if (!searchQuery.value) {
@@ -412,22 +790,39 @@ $activeUsersByRole = $userRepository->db()
                     const results = []
 
                     sections.forEach(section => {
-                        const element = document.getElementById(section.id)
-                        if (!element) return
-
-                        const content = element.textContent.toLowerCase()
-                        if (content.includes(query)) {
-                            const excerpt = content.substring(
-                                Math.max(0, content.indexOf(query) - 50),
-                                Math.min(content.length, content.indexOf(query) + 50)
-                            )
-
-                            results.push({
-                                id: section.id,
-                                title: section.title,
-                                excerpt: highlightText(excerpt, query)
-                            })
+                        // Search in section content
+                        const sectionElement = document.getElementById(section.id)
+                        if (sectionElement) {
+                            const content = sectionElement.textContent.toLowerCase()
+                            if (content.includes(query)) {
+                                results.push({
+                                    id: section.id,
+                                    title: section.title,
+                                    excerpt: highlightText(content.substring(
+                                        Math.max(0, content.indexOf(query) - 50),
+                                        Math.min(content.length, content.indexOf(query) + 50)
+                                    ), query)
+                                })
+                            }
                         }
+
+                        // Search in subsections
+                        section.subsections.forEach(subsection => {
+                            const subsectionElement = document.getElementById(subsection.id)
+                            if (subsectionElement) {
+                                const content = subsectionElement.textContent.toLowerCase()
+                                if (content.includes(query)) {
+                                    results.push({
+                                        id: subsection.id,
+                                        title: `${section.title} > ${subsection.title}`,
+                                        excerpt: highlightText(content.substring(
+                                            Math.max(0, content.indexOf(query) - 50),
+                                            Math.min(content.length, content.indexOf(query) + 50)
+                                        ), query)
+                                    })
+                                }
+                            }
+                        })
                     })
 
                     searchResults.value = results
@@ -442,38 +837,17 @@ $activeUsersByRole = $userRepository->db()
                     const element = document.getElementById(sectionId)
                     if (element) {
                         element.scrollIntoView({ behavior: 'smooth' })
-                        activeSection.value = sectionId
+                        const section = sections.find(s => s.id === sectionId || s.subsections.some(sub => sub.id === sectionId))
+                        if (section) {
+                            activeSection.value = section.id
+                            if (!expandedSections.value.includes(section.id)) {
+                                expandedSections.value.push(section.id)
+                            }
+                        }
                         searchResults.value = []
                         history.replaceState(null, null, `#${sectionId}`)
                     }
                 }
-
-                const setActiveSection = (sectionId) => {
-                    activeSection.value = sectionId
-                }
-
-                // Enhanced section tracking
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const sectionId = entry.target.id
-                            activeSection.value = sectionId
-                            history.replaceState(null, null, `#${sectionId}`)
-                        }
-                    })
-                }, { 
-                    threshold: 0.2,
-                    rootMargin: '-100px 0px -50% 0px'
-                })
-
-                // Observe all sections
-                onMounted(() => {
-                    sections.forEach(section => {
-                        const element = document.getElementById(section.id)
-                        if (element) observer.observe(element)
-                    })
-                    addCopyButtons()
-                })
 
                 // Add copy button functionality
                 const addCopyButtons = () => {
@@ -492,14 +866,54 @@ $activeUsersByRole = $userRepository->db()
                     })
                 }
 
+                // Enhanced section tracking
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const sectionId = entry.target.id
+                            activeSection.value = sectionId
+                            history.replaceState(null, null, `#${sectionId}`)
+                        }
+                    })
+                }, { 
+                    threshold: 0.2,
+                    rootMargin: '-100px 0px -50% 0px'
+                })
+
+                // Initialize on mount
+                onMounted(() => {
+                    // Observe all sections
+                    sections.forEach(section => {
+                        const element = document.getElementById(section.id)
+                        if (element) observer.observe(element)
+                    })
+                    addCopyButtons()
+
+                    // Handle initial hash in URL
+                    const hash = window.location.hash.slice(1)
+                    if (hash) {
+                        const section = sections.find(s => s.id === hash || s.subsections.some(sub => sub.id === hash))
+                        if (section) {
+                            setActiveSection(section.id)
+                            if (sections.some(s => s.subsections.some(sub => sub.id === hash))) {
+                                setActiveSubsection(hash)
+                            }
+                        }
+                    }
+                })
+
                 return {
                     searchQuery,
                     searchResults,
                     sections,
                     activeSection,
+                    activeSubsection,
+                    expandedSections,
                     performSearch,
                     scrollToSection,
-                    setActiveSection
+                    setActiveSection,
+                    setActiveSubsection,
+                    toggleSection
                 }
             }
         }).mount('#app')
