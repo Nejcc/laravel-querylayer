@@ -74,6 +74,7 @@ abstract class BaseRepository implements RepositoryInterface
     {
         $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->get();
         $this->reset();
+
         return $result;
     }
 
@@ -91,15 +92,18 @@ abstract class BaseRepository implements RepositoryInterface
     {
         if ($this->useCache) {
             $cacheKey = $this->generateCacheKey('find', ['id' => $id]);
+
             return cache()->remember($cacheKey, $this->cacheTtl, function () use ($id) {
                 $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->find($id);
                 $this->reset();
+
                 return $result;
             });
         }
 
         $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->find($id);
         $this->reset();
+
         return $result;
     }
 
@@ -107,49 +111,56 @@ abstract class BaseRepository implements RepositoryInterface
     {
         if ($this->useCache) {
             $cacheKey = $this->generateCacheKey('findBy', ['column' => $column, 'value' => $value]);
+
             return cache()->remember($cacheKey, $this->cacheTtl, function () use ($column, $value) {
                 $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->where($column, $value)->first();
                 $this->reset();
+
                 return $result;
             });
         }
 
         $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->where($column, $value)->first();
         $this->reset();
+
         return $result;
     }
 
     /**
      * Add where conditions to the query for chaining
      *
-     * @param array<string, mixed> $conditions
+     * @param  array<string, mixed>  $conditions
      * @return $this<TModel>
      */
     final public function whereCondition(array $conditions): self
     {
         $this->currentQuery->where($conditions);
+
         return $this;
     }
 
     /**
      * Get all matching conditions.
      *
-     * @param array<string, mixed> $conditions
+     * @param  array<string, mixed>  $conditions
      * @return Collection<int, TModel>
      */
     final public function where(array $conditions): Collection
     {
         if ($this->useCache) {
             $cacheKey = $this->generateCacheKey('where', ['conditions' => $conditions]);
+
             return cache()->remember($cacheKey, $this->cacheTtl, function () use ($conditions) {
                 $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->where($conditions)->get();
                 $this->reset();
+
                 return $result;
             });
         }
 
         $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->where($conditions)->get();
         $this->reset();
+
         return $result;
     }
 
@@ -238,7 +249,7 @@ abstract class BaseRepository implements RepositoryInterface
     /**
      * Enable caching for the next query
      *
-     * @param int|null $ttl Cache TTL in seconds
+     * @param  int|null  $ttl  Cache TTL in seconds
      * @return $this<TModel>
      */
     final public function cache(?int $ttl = null): self
@@ -247,6 +258,7 @@ abstract class BaseRepository implements RepositoryInterface
         if ($ttl !== null) {
             $this->cacheTtl = $ttl;
         }
+
         return $this;
     }
 
@@ -258,19 +270,8 @@ abstract class BaseRepository implements RepositoryInterface
     final public function withoutCache(): self
     {
         $this->useCache = false;
-        return $this;
-    }
 
-    /**
-     * Generate a cache key for the current query
-     */
-    protected function generateCacheKey(string $method, array $parameters = []): string
-    {
-        $key = $this->cachePrefix . $this->model->getTable() . '_' . $method;
-        if (!empty($parameters)) {
-            $key .= '_' . md5(serialize($parameters));
-        }
-        return $key;
+        return $this;
     }
 
     /**
@@ -284,14 +285,16 @@ abstract class BaseRepository implements RepositoryInterface
         $this->trashedState = 'none';
         $this->useCache = false;
         $this->currentQuery = $this->model->newQuery();
+
         return $this;
     }
 
     final public function query(): Builder
     {
-        if (!isset($this->currentQuery)) {
+        if (! isset($this->currentQuery)) {
             $this->currentQuery = $this->model->newQuery();
         }
+
         return $this->currentQuery;
     }
 
@@ -364,6 +367,198 @@ abstract class BaseRepository implements RepositoryInterface
     }
 
     /**
+     * Get the results for the current query
+     *
+     * @return Collection<int, TModel>
+     */
+    final public function get(): Collection
+    {
+        $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->get();
+        $this->reset();
+
+        return $result;
+    }
+
+    /**
+     * Add a where clause with OR condition
+     *
+     * @param  array<string, mixed>  $conditions
+     * @return $this<TModel>
+     */
+    final public function orWhere(array $conditions): self
+    {
+        $this->currentQuery->orWhere(function ($q) use ($conditions) {
+            foreach ($conditions as $column => $value) {
+                $q->where($column, $value);
+            }
+        });
+
+        return $this;
+    }
+
+    /**
+     * Add a where clause with nested conditions
+     *
+     * @return $this<TModel>
+     */
+    final public function whereNested(callable $callback): self
+    {
+        $this->query()->where(function ($query) use ($callback) {
+            $callback($query);
+        });
+
+        return $this;
+    }
+
+    /**
+     * Add a where clause with raw SQL
+     *
+     * @return $this<TModel>
+     */
+    final public function whereRaw(string $sql, array $bindings = []): self
+    {
+        $this->query()->whereRaw($sql, $bindings);
+
+        return $this;
+    }
+
+    /**
+     * Apply a query scope
+     *
+     * @param  mixed  ...$parameters
+     * @return $this<TModel>
+     */
+    final public function scope(string $scope, ...$parameters): self
+    {
+        $this->currentQuery->{$scope}(...$parameters);
+
+        return $this;
+    }
+
+    /**
+     * Get the query builder with all applied conditions
+     *
+     * @return Builder<TModel>
+     */
+    final public function getQuery(): Builder
+    {
+        return $this->applyTrashedState($this->applyEagerLoading($this->query()));
+    }
+
+    /**
+     * Insert multiple records at once
+     *
+     * @param  array<array<string, mixed>>  $records
+     */
+    final public function insert(array $records): bool
+    {
+        try {
+            DB::beginTransaction();
+            foreach ($records as $record) {
+                $this->model->newInstance($record)->save();
+            }
+            DB::commit();
+
+            return true;
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            return false;
+        }
+    }
+
+    /**
+     * Insert multiple records and get their IDs
+     *
+     * @param  array<array<string, mixed>>  $records
+     * @return array<int>
+     */
+    final public function insertGetIds(array $records): array
+    {
+        $ids = [];
+        try {
+            DB::beginTransaction();
+            foreach ($records as $record) {
+                $model = $this->model->newInstance($record);
+                $model->save();
+                $ids[] = $model->getKey();
+            }
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Update multiple records based on a condition
+     *
+     * @param  array<string, mixed>  $values
+     * @param  array<string, mixed>  $conditions
+     * @return int Number of affected rows
+     */
+    final public function updateWhere(array $values, array $conditions): int
+    {
+        $query = $this->currentQuery->where($conditions);
+        $affected = $query->update($values);
+        $this->reset();
+
+        return $affected;
+    }
+
+    /**
+     * Delete multiple records based on a condition
+     *
+     * @param  array<string, mixed>  $conditions
+     * @return int Number of affected rows
+     */
+    final public function deleteWhere(array $conditions): int
+    {
+        $query = $this->currentQuery->where($conditions);
+        $affected = $query->delete();
+        $this->reset();
+
+        return $affected;
+    }
+
+    /**
+     * Process records in chunks
+     */
+    final public function chunk(int $chunkSize, callable $callback): bool
+    {
+        $result = $this->currentQuery->chunk($chunkSize, $callback);
+        $this->reset();
+
+        return $result;
+    }
+
+    /**
+     * Process records in chunks with cursor
+     */
+    final public function chunkById(int $chunkSize, callable $callback): bool
+    {
+        $result = $this->currentQuery->chunkById($chunkSize, $callback);
+        $this->reset();
+
+        return $result;
+    }
+
+    /**
+     * Generate a cache key for the current query
+     */
+    protected function generateCacheKey(string $method, array $parameters = []): string
+    {
+        $key = $this->cachePrefix.$this->model->getTable().'_'.$method;
+        if (! empty($parameters)) {
+            $key .= '_'.md5(serialize($parameters));
+        }
+
+        return $key;
+    }
+
+    /**
      * Resolve model instance.
      *
      * @throws BindingResolutionException
@@ -422,185 +617,5 @@ abstract class BaseRepository implements RepositoryInterface
         }
 
         return $query->with($this->with);
-    }
-
-    /**
-     * Get the results for the current query
-     *
-     * @return Collection<int, TModel>
-     */
-    final public function get(): Collection
-    {
-        $result = $this->applyTrashedState($this->applyEagerLoading($this->currentQuery))->get();
-        $this->reset();
-        return $result;
-    }
-
-    /**
-     * Add a where clause with OR condition
-     *
-     * @param array<string, mixed> $conditions
-     * @return $this<TModel>
-     */
-    final public function orWhere(array $conditions): self
-    {
-        $this->currentQuery->orWhere(function($q) use ($conditions) {
-            foreach ($conditions as $column => $value) {
-                $q->where($column, $value);
-            }
-        });
-        return $this;
-    }
-
-    /**
-     * Add a where clause with nested conditions
-     *
-     * @param callable $callback
-     * @return $this<TModel>
-     */
-    final public function whereNested(callable $callback): self
-    {
-        $this->query()->where(function ($query) use ($callback) {
-            $callback($query);
-        });
-        return $this;
-    }
-
-    /**
-     * Add a where clause with raw SQL
-     *
-     * @param string $sql
-     * @param array $bindings
-     * @return $this<TModel>
-     */
-    final public function whereRaw(string $sql, array $bindings = []): self
-    {
-        $this->query()->whereRaw($sql, $bindings);
-        return $this;
-    }
-
-    /**
-     * Apply a query scope
-     *
-     * @param string $scope
-     * @param mixed ...$parameters
-     * @return $this<TModel>
-     */
-    final public function scope(string $scope, ...$parameters): self
-    {
-        $this->currentQuery->{$scope}(...$parameters);
-        return $this;
-    }
-
-    /**
-     * Get the query builder with all applied conditions
-     *
-     * @return Builder<TModel>
-     */
-    final public function getQuery(): Builder
-    {
-        return $this->applyTrashedState($this->applyEagerLoading($this->query()));
-    }
-
-    /**
-     * Insert multiple records at once
-     *
-     * @param array<array<string, mixed>> $records
-     * @return bool
-     */
-    final public function insert(array $records): bool
-    {
-        try {
-            DB::beginTransaction();
-            foreach ($records as $record) {
-                $this->model->newInstance($record)->save();
-            }
-            DB::commit();
-            return true;
-        } catch (Throwable $e) {
-            DB::rollBack();
-            return false;
-        }
-    }
-
-    /**
-     * Insert multiple records and get their IDs
-     *
-     * @param array<array<string, mixed>> $records
-     * @return array<int>
-     */
-    final public function insertGetIds(array $records): array
-    {
-        $ids = [];
-        try {
-            DB::beginTransaction();
-            foreach ($records as $record) {
-                $model = $this->model->newInstance($record);
-                $model->save();
-                $ids[] = $model->getKey();
-            }
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-        return $ids;
-    }
-
-    /**
-     * Update multiple records based on a condition
-     *
-     * @param array<string, mixed> $values
-     * @param array<string, mixed> $conditions
-     * @return int Number of affected rows
-     */
-    final public function updateWhere(array $values, array $conditions): int
-    {
-        $query = $this->currentQuery->where($conditions);
-        $affected = $query->update($values);
-        $this->reset();
-        return $affected;
-    }
-
-    /**
-     * Delete multiple records based on a condition
-     *
-     * @param array<string, mixed> $conditions
-     * @return int Number of affected rows
-     */
-    final public function deleteWhere(array $conditions): int
-    {
-        $query = $this->currentQuery->where($conditions);
-        $affected = $query->delete();
-        $this->reset();
-        return $affected;
-    }
-
-    /**
-     * Process records in chunks
-     *
-     * @param int $chunkSize
-     * @param callable $callback
-     * @return bool
-     */
-    final public function chunk(int $chunkSize, callable $callback): bool
-    {
-        $result = $this->currentQuery->chunk($chunkSize, $callback);
-        $this->reset();
-        return $result;
-    }
-
-    /**
-     * Process records in chunks with cursor
-     *
-     * @param int $chunkSize
-     * @param callable $callback
-     * @return bool
-     */
-    final public function chunkById(int $chunkSize, callable $callback): bool
-    {
-        $result = $this->currentQuery->chunkById($chunkSize, $callback);
-        $this->reset();
-        return $result;
     }
 }

@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Nejcc\LaravelQuerylayer\Tests;
 
 use Illuminate\Support\Facades\Cache;
 use Nejcc\LaravelQuerylayer\Tests\Models\User;
 use Nejcc\LaravelQuerylayer\Tests\Repositories\UserRepository;
 
-class RepositoryFeaturesTest extends TestCase
+final class RepositoryFeaturesTest extends TestCase
 {
     protected UserRepository $repository;
 
@@ -42,7 +44,7 @@ class RepositoryFeaturesTest extends TestCase
         $this->assertNotNull($result2);
 
         // Verify cache was used
-        $cacheKey = "repository_users_find_" . md5(serialize(['id' => $user->id]));
+        $cacheKey = 'repository_users_find_'.md5(serialize(['id' => $user->id]));
         $this->assertTrue(Cache::has($cacheKey));
     }
 
@@ -188,4 +190,4 @@ class RepositoryFeaturesTest extends TestCase
         });
         $this->assertEquals(10, $processed);
     }
-} 
+}
