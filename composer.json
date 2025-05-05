@@ -1,0 +1,56 @@
+{
+    "name": "nejcc/laravel-querylayer",
+    "description": "",
+    "keywords": [
+        "nejcc",
+        "laravel-querylayer"
+    ],
+    "homepage": "https://github.com/nejcc/laravel-querylayer",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Nejcc",
+            "email": "info@after.si",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^10.0",
+        "phpunit/phpunit": "^11.0",
+        "laravel/pint": "^1.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nejcc\\LaravelQuerylayer\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Nejcc\\LaravelQuerylayer\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "format": "vendor/bin/pint",
+        "format-test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nejcc\\LaravelQuerylayer\\LaravelQuerylayerServiceProvider"
+            ],
+            "aliases": {
+                "LaravelQuerylayer": "Nejcc\\LaravelQuerylayer\\LaravelQuerylayerFacade"
+            }
+        }
+    }
+}
