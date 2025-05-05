@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel QueryLayer Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <style>
+        .sidebar {
+            height: calc(100vh - 4rem);
+            position: sticky;
+            top: 4rem;
+        }
+        .content {
+            max-width: 65ch;
+        }
+        pre {
+            background: #1a1a1a !important;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        code {
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold text-gray-800">Laravel QueryLayer</h1>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="https://github.com/nejcc/laravel-querylayer" class="text-gray-600 hover:text-gray-900">
+                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 pt-20">
+        <div class="flex">
+            <!-- Sidebar -->
+            <div class="w-64 flex-shrink-0 pr-8">
+                <div class="sidebar overflow-y-auto">
+                    <nav class="space-y-1">
+                        <a href="#introduction" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50">Introduction</a>
+                        <a href="#installation" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50">Installation</a>
+                        <a href="#quick-start" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50">Quick Start</a>
+                        <a href="#model-interface" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50">Model Interface</a>
+                        <a href="#repository-pattern" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50">Repository Pattern</a>
+                        <a href="#advanced-features" class="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-50">Advanced Features</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 content">
+                <section id="introduction" class="mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Introduction</h2>
+                    <p class="text-gray-700 mb-4">
+                        Laravel QueryLayer is a powerful and flexible repository pattern implementation for Laravel applications. 
+                        It provides a clean and maintainable way to handle database operations in your Laravel projects, with 
+                        built-in singleton pattern support for efficient repository management.
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-blue-800">Key Features</h3>
+                                <div class="mt-2 text-sm text-blue-700">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>Quick repository creation for any Eloquent model</li>
+                                        <li>Full CRUD operations out of the box</li>
+                                        <li>Type-safe with PHP 8.0+ features</li>
+                                        <li>Query builder access for complex queries</li>
+                                        <li>Pagination support</li>
+                                        <li>Extensible base repository</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="installation" class="mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Installation</h2>
+                    <p class="text-gray-700 mb-4">
+                        You can install the package via composer:
+                    </p>
+                    <pre><code class="language-bash">composer require nejcc/laravel-querylayer</code></pre>
+                    <p class="text-gray-700 mt-4">
+                        The package will automatically register its service provider.
+                    </p>
+                </section>
+
+                <section id="model-interface" class="mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Model Interface</h2>
+                    <p class="text-gray-700 mb-4">
+                        You can use repository functionality directly on your models by implementing the 
+                        <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">ModelInterface</code> and using the 
+                        <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">HasRepository</code> trait:
+                    </p>
+                    <pre><code class="language-php">use Nejcc\LaravelQuerylayer\Contracts\ModelInterface;
+use Nejcc\LaravelQuerylayer\Traits\HasRepository;
+
+class User extends Model implements ModelInterface
+{
+    use HasRepository;
+
+    protected static function getRepositoryClass(): string
+    {
+        return UserRepository::class;
+    }
+}</code></pre>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4">Usage Examples</h3>
+                    <pre><code class="language-php">// Create a new user
+$user = User::createRecord([
+    'name' => 'John Doe',
+    'email' => 'john@example.com'
+]);
+
+// Find a user
+$user = User::findById(1);
+$user = User::findByColumn('email', 'john@example.com');
+
+// Get all users
+$users = User::getAll();
+
+// Get paginated users
+$users = User::getPaginated(10);
+
+// Get users with conditions
+$users = User::getWhere(['role' => 'admin']);
+
+// Update a user
+User::updateRecord(1, ['name' => 'Jane Doe']);
+
+// Delete a user
+User::deleteRecord(1);
+
+// Get the query builder
+$query = User::getQuery();
+
+// Get the repository instance
+$repository = User::getRepository();</code></pre>
+                </section>
+
+                <section id="repository-pattern" class="mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Repository Pattern</h2>
+                    <p class="text-gray-700 mb-4">
+                        For more complex scenarios, you can extend the <code class="text-sm bg-gray-100 px-1 py-0.5 rounded">BaseRepository</code>:
+                    </p>
+                    <pre><code class="language-php">use Nejcc\LaravelQuerylayer\Repositories\BaseRepository;
+use App\Models\User;
+
+class UserRepository extends BaseRepository
+{
+    protected function model(): string
+    {
+        return User::class;
+    }
+
+    public function getActiveAdminsPaginated(?int $perPage = null): LengthAwarePaginator
+    {
+        return $this->getActiveAdminsQuery()->paginate($perPage);
+    }
+
+    public function getActiveAdminsQuery(): Builder
+    {
+        return $this->query()
+            ->where('is_active', true)
+            ->where('role', 'admin');
+    }
+}</code></pre>
+                </section>
+
+                <section id="advanced-features" class="mb-12">
+                    <h2 class="text-3xl font-bold mb-4">Advanced Features</h2>
+                    
+                    <h3 class="text-2xl font-bold mt-8 mb-4">Method Chaining</h3>
+                    <pre><code class="language-php">// Chain methods for a single query
+$adminUsers = $userRepository
+    ->with('posts')
+    ->where(['role' => 'admin'])
+    ->paginate(15);
+
+// For limited dataset
+$recentPosts = $postRepository
+    ->query()
+    ->orderBy('created_at', 'desc')
+    ->limit(5)
+    ->get();</code></pre>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4">Transactions</h3>
+                    <pre><code class="language-php">// Wrap multiple operations in a transaction
+$userRepository->transaction(function () use ($userRepository) {
+    $user = $userRepository->create(['name' => 'Transaction User']);
+    $userRepository->update($user->id, ['name' => 'Updated User']);
+    return $user;
+});
+
+// Or use the convenient methods
+$user = $userRepository->createOrFail(['name' => 'Safe Create']);
+$success = $userRepository->updateOrFail(1, ['name' => 'Safe Update']);</code></pre>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4">Direct Database Access</h3>
+                    <pre><code class="language-php">// Get raw database query builder
+$usersTable = $userRepository->db();
+
+// Complex SQL operations
+$activeUsersByRole = $userRepository->db()
+    ->select('role', $userRepository->db()->raw('COUNT(*) as count'))
+    ->where('is_active', true)
+    ->groupBy('role')
+    ->orderBy('count', 'desc')
+    ->get();</code></pre>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-bash.min.js"></script>
+</body>
+</html> 
