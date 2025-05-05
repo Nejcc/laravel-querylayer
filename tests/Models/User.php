@@ -7,10 +7,16 @@ namespace Nejcc\LaravelQuerylayer\Tests\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Nejcc\LaravelQuerylayer\Contracts\ModelInterface;
+use Nejcc\LaravelQuerylayer\Tests\Repositories\UserRepository;
+use Nejcc\LaravelQuerylayer\Traits\HasRepository;
 
-final class User extends Model
+/**
+ * @implements ModelInterface<User>
+ */
+final class User extends Model implements ModelInterface
 {
-    use SoftDeletes;
+    use HasRepository, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -33,13 +39,29 @@ final class User extends Model
         return $this->hasMany(Comment::class);
     }
 
+    /**
+     * Scope a query to only include active users.
+     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
+    /**
+     * Scope a query to only include users with a specific role.
+     */
     public function scopeRole($query, string $role)
     {
         return $query->where('role', $role);
+    }
+
+    /**
+     * Get the repository class for this model
+     *
+     * @return class-string<UserRepository>
+     */
+    protected static function getRepositoryClass(): string
+    {
+        return UserRepository::class;
     }
 }
